@@ -250,34 +250,53 @@ begin
   --dir_red
   --dir_green
   --dir_blue
-  dir_red<=x"ff" when dir_pixel_column<80 else
-						x"ff" when (dif_pixel_column>=80 and dif_pixel_column<160) else
-						x"00" when (dif_pixel_column>=160 and dif_pixel_column<240) else
-						x"00" when (dif_pixel_column>=240 and dif_pixel_column<320) else
-						x"ff" when (dif_pixel_column>=320 and dif_pixel_column<400) else
-						x"ff" when (dif_pixel_column>=400 and dif_pixel_column<480) else
-						x"00" when (dif_pixel_column>=480 and dif_pixel_column<560) else
-						x"00" ;
-	dir_green<=x"ff" when dir_pixel_column<80 else
-						x"ff" when (dif_pixel_column>=80 and dif_pixel_column<160) else
-						x"ff" when (dif_pixel_column>=160 and dif_pixel_column<240) else
-						x"ff" when (dif_pixel_column>=240 and dif_pixel_column<320) else
-						x"00" when (dif_pixel_column>=320 and dif_pixel_column<400) else
-						x"00" when (dif_pixel_column>=400 and dif_pixel_column<480) else
-						x"00" when (dif_pixel_column>=480 and dif_pixel_column<560) else
-						x"00" ;
-	dir_blue<=x"ff" when dir_pixel_column<80 else
-						x"00" when (dif_pixel_column>=80 and dif_pixel_column<160) else
-						x"ff" when (dif_pixel_column>=160 and dif_pixel_column<240) else
-						x"00" when (dif_pixel_column>=240 and dif_pixel_column<320) else
-						x"ff" when (dif_pixel_column>=320 and dif_pixel_column<400) else
-						x"00" when (dif_pixel_column>=400 and dif_pixel_column<480) else
-						x"ff" when (dif_pixel_column>=480 and dif_pixel_column<560) else
-						x"00" ;
+--  dir_red<=x"ff" when dir_pixel_column<80 else
+--						x"ff" when (dir_pixel_column>=80 and dir_pixel_column<160) else
+--						x"00" when (dir_pixel_column>=160 and dir_pixel_column<240) else
+--						x"00" when (dir_pixel_column>=240 and dir_pixel_column<320) else
+--						x"ff" when (dir_pixel_column>=320 and dir_pixel_column<400) else
+--						x"ff" when (dir_pixel_column>=400 and dir_pixel_column<480) else
+--						x"00" when (dir_pixel_column>=480 and dir_pixel_column<560) else
+--						x"00" ;
+--	dir_green<=x"ff" when dir_pixel_column<80 else
+--						x"ff" when (dir_pixel_column>=80 and dir_pixel_column<160) else
+--						x"ff" when (dir_pixel_column>=160 and dir_pixel_column<240) else
+--						x"ff" when (dir_pixel_column>=240 and dir_pixel_column<320) else
+--						x"00" when (dir_pixel_column>=320 and dir_pixel_column<400) else
+--						x"00" when (dir_pixel_column>=400 and dir_pixel_column<480) else
+--						x"00" when (dir_pixel_column>=480 and dir_pixel_column<560) else
+--						x"00" ;
+--	dir_blue<=x"ff" when dir_pixel_column<80 else
+--						x"00" when (dir_pixel_column>=80 and dir_pixel_column<160) else
+--						x"ff" when (dir_pixel_column>=160 and dir_pixel_column<240) else
+--						x"00" when (dir_pixel_column>=240 and dir_pixel_column<320) else
+--						x"ff" when (dir_pixel_column>=320 and dir_pixel_column<400) else
+--						x"00" when (dir_pixel_column>=400 and dir_pixel_column<480) else
+--						x"ff" when (dir_pixel_column>=480 and dir_pixel_column<560) else
+--						x"00" ;
   -- koristeci signale realizovati logiku koja pise po TXT_MEM
   --char_address
   --char_value
   --char_we
+		-- INCUBATOR IS IN MY HOME      I N C U B A T O R S M Y H E
+		
+		char_we<='1';
+		
+		process(pix_clock_s) begin
+			if(rising_edge(pix_clock_s)) then
+				if(char_address="1001011000000")then
+					char_address<=(others=>'0');
+				else
+					char_address<=char_address+1;
+				end if;
+			end if;
+		end process;
+		
+		
+		char_value <= "00"&X"9" when char_address="0000000000000";
+		
+		
+		
   
   -- koristeci signale realizovati logiku koja pise po GRAPH_MEM
   --pixel_address
