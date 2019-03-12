@@ -146,6 +146,8 @@ architecture rtl of top is
   signal pixel_address       : std_logic_vector(GRAPH_MEM_ADDR_WIDTH-1 downto 0);
   signal pixel_value         : std_logic_vector(GRAPH_MEM_DATA_WIDTH-1 downto 0);
   signal pixel_we            : std_logic;
+  signal offset     			  : std_logic_vector(MEM_ADDR_WIDTH-1 downto 0);
+  signal offset_next         : std_logic_vector(MEM_ADDR_WIDTH-1 downto 0);
 
   signal pix_clock_s         : std_logic;
   signal vga_rst_n_s         : std_logic;
@@ -156,7 +158,14 @@ architecture rtl of top is
   signal dir_blue            : std_logic_vector(7 downto 0);
   signal dir_pixel_column    : std_logic_vector(10 downto 0);
   signal dir_pixel_row       : std_logic_vector(10 downto 0);
+  
+  signal pixel_row				:std_logic_vector(GRAPH_MEM_ADDR_WIDTH-1 downto 0);
+  signal pixel_col				:std_logic_vector(GRAPH_MEM_ADDR_WIDTH-1 downto 0);
 
+	signal sec_cnt					:std_logic_vector(24 downto 0);
+	signal sec_cnt_next			:std_logic_vector(24 downto 0);
+	signal move_cnt				:std_logic_vector(5 downto 0);
+	signal move_cnt_next			:std_logic_vector(5 downto 0);
 begin
 
   -- calculate message lenght from font size
@@ -168,8 +177,8 @@ begin
   graphics_lenght <= conv_std_logic_vector(MEM_SIZE*8*8, GRAPH_MEM_ADDR_WIDTH);
   
   -- removed to inputs pin
-  direct_mode <= '1';
-  display_mode     <= "10";  -- 01 - text mode, 10 - graphics mode, 11 - text & graphics
+  direct_mode <= '0';
+  display_mode     <= "01";  -- 01 - text mode, 10 - graphics mode, 11 - text & graphics
   
   font_size        <= x"1";
   show_frame       <= '1';
@@ -284,7 +293,7 @@ begin
 		
 		process(pix_clock_s) begin
 			if(rising_edge(pix_clock_s)) then
-				if(char_address="1001011000000")then
+				if(char_address="10010110000")then
 					char_address<=(others=>'0');
 				else
 					char_address<=char_address+1;
@@ -293,15 +302,50 @@ begin
 		end process;
 		
 		
-		char_value <= "00"&X"9" when char_address="0000000000000";
 		
+		char_value <= "00"&X"9" when char_address="00010000000" else			--I
+						"00"&X"E"	when char_address="00010000001" else			--N
+						"00"&X"B"	when char_address="00010000010" else			--K
+						"01"&X"5"	when char_address="00010000011" else			--U
+						"00"&X"2"	when char_address="00010000100" else			--B
+						"00"&X"1"	when char_address="00010000101" else			--A
+						"01"&X"4"	when char_address="00010000110" else			--T
+						"00"&X"F"	when char_address="00010000111" else			--O
+						"01"&X"2"	when char_address="00010001000" else			--R
+						"100000";																-- 
+						
+		pixel_we<='1';
 		
-		
+		process(pix_clock_s)begin
+				if(rising_edge(pix_clock_s))then
+					sec_cnt<=sec_cnt_next;
+					move_cnt<=move_cnt_next;
+					offset<=offset_next;
+					
+					if(pixel_col=20) then
+						pixel_col<=(others=>'0');
+						pixel_row<=pixel_row+20;
+					elsif(pixel_row=9600)then
+						pixel_col<=(others=>'0');
+						pixel_col<=(others=>'0');
+					else
+						pixel_col<=pixel_col+1;
+						pixel_row<=pixel_row;
+					end if;
+				end if;
+		end process;
   
   -- koristeci signale realizovati logiku koja pise po GRAPH_MEM
   --pixel_address
   --pixel_value
   --pixel_we
-  
-  
+		sec_cnt_next<=sec_cnt+1 when sec_cnt<10000000 else (others=>'0');
+		move_cnt_next<= move_cnt when sec_cnt<10000000 else
+																move_cnt+1 when move_cnt<19 else(others=>'0');
+		pixel_address<=pixel_row+pixel_col;
+		pixel_value <=X"FFFFFFFF" when pixel_col=move_cnt and pixel_row>400 and pixel_row<1040 else
+							X"00000000";
+							
+		
+		
 end rtl;
