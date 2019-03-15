@@ -21,6 +21,8 @@ entity top is
     GRAPH_MEM_DATA_WIDTH : natural := 32
     );
   port (
+	 direct_mode_i  : in std_logic;
+	 display_mode_i : in  std_logic_vector(1 downto 0);
     clk_i          : in  std_logic;
     reset_n_i      : in  std_logic;
     -- vga
@@ -166,6 +168,8 @@ architecture rtl of top is
 	signal sec_cnt_next			:std_logic_vector(24 downto 0);
 	signal move_cnt				:std_logic_vector(5 downto 0);
 	signal move_cnt_next			:std_logic_vector(5 downto 0);
+	
+	
 begin
 
   -- calculate message lenght from font size
@@ -178,7 +182,7 @@ begin
   
   -- removed to inputs pin
   direct_mode <= '0';
-  display_mode     <= "01";  -- 01 - text mode, 10 - graphics mode, 11 - text & graphics
+  display_mode     <= "11";  -- 01 - text mode, 10 - graphics mode, 11 - text & graphics
   
   font_size        <= x"1";
   show_frame       <= '1';
@@ -220,14 +224,14 @@ begin
     clk_i              => clk_i,
     reset_n_i          => reset_n_i,
     --
-    direct_mode_i      => direct_mode,
+    direct_mode_i      => direct_mode_i,
     dir_red_i          => dir_red,
     dir_green_i        => dir_green,
     dir_blue_i         => dir_blue,
     dir_pixel_column_o => dir_pixel_column,
     dir_pixel_row_o    => dir_pixel_row,
     -- cfg
-    display_mode_i     => display_mode,  -- 01 - text mode, 10 - graphics mode, 11 - text & graphics
+    display_mode_i     => display_mode_i,  -- 01 - text mode, 10 - graphics mode, 11 - text & graphics
     -- text mode interface
     text_addr_i        => char_address,
     text_data_i        => char_value,
@@ -255,43 +259,43 @@ begin
     blue_o             => blue_o     
   );
   
-  -- na osnovu signala iz vga_top modula dir_pixel_column i dir_pixel_row realizovati logiku koja genereise
-  --dir_red
-  --dir_green
-  --dir_blue
---  dir_red<=x"ff" when dir_pixel_column<80 else
---						x"ff" when (dir_pixel_column>=80 and dir_pixel_column<160) else
---						x"00" when (dir_pixel_column>=160 and dir_pixel_column<240) else
---						x"00" when (dir_pixel_column>=240 and dir_pixel_column<320) else
---						x"ff" when (dir_pixel_column>=320 and dir_pixel_column<400) else
---						x"ff" when (dir_pixel_column>=400 and dir_pixel_column<480) else
---						x"00" when (dir_pixel_column>=480 and dir_pixel_column<560) else
---						x"00" ;
---	dir_green<=x"ff" when dir_pixel_column<80 else
---						x"ff" when (dir_pixel_column>=80 and dir_pixel_column<160) else
---						x"ff" when (dir_pixel_column>=160 and dir_pixel_column<240) else
---						x"ff" when (dir_pixel_column>=240 and dir_pixel_column<320) else
---						x"00" when (dir_pixel_column>=320 and dir_pixel_column<400) else
---						x"00" when (dir_pixel_column>=400 and dir_pixel_column<480) else
---						x"00" when (dir_pixel_column>=480 and dir_pixel_column<560) else
---						x"00" ;
---	dir_blue<=x"ff" when dir_pixel_column<80 else
---						x"00" when (dir_pixel_column>=80 and dir_pixel_column<160) else
---						x"ff" when (dir_pixel_column>=160 and dir_pixel_column<240) else
---						x"00" when (dir_pixel_column>=240 and dir_pixel_column<320) else
---						x"ff" when (dir_pixel_column>=320 and dir_pixel_column<400) else
---						x"00" when (dir_pixel_column>=400 and dir_pixel_column<480) else
---						x"ff" when (dir_pixel_column>=480 and dir_pixel_column<560) else
---						x"00" ;
+   --na osnovu signala iz vga_top modula dir_pixel_column i dir_pixel_row realizovati logiku koja genereise
+ -- dir_red
+ -- dir_green
+ -- dir_blue
+  dir_red<=x"ff" when dir_pixel_column<80 else
+						x"ff" when (dir_pixel_column>=80 and dir_pixel_column<160) else
+						x"00" when (dir_pixel_column>=160 and dir_pixel_column<240) else
+						x"00" when (dir_pixel_column>=240 and dir_pixel_column<320) else
+						x"ff" when (dir_pixel_column>=320 and dir_pixel_column<400) else
+						x"ff" when (dir_pixel_column>=400 and dir_pixel_column<480) else
+						x"00" when (dir_pixel_column>=480 and dir_pixel_column<560) else
+						x"00" ;
+	dir_green<=x"ff" when dir_pixel_column<80 else
+						x"ff" when (dir_pixel_column>=80 and dir_pixel_column<160) else
+						x"ff" when (dir_pixel_column>=160 and dir_pixel_column<240) else
+						x"ff" when (dir_pixel_column>=240 and dir_pixel_column<320) else
+						x"00" when (dir_pixel_column>=320 and dir_pixel_column<400) else
+						x"00" when (dir_pixel_column>=400 and dir_pixel_column<480) else
+						x"00" when (dir_pixel_column>=480 and dir_pixel_column<560) else
+						x"00" ;
+	dir_blue<=x"ff" when dir_pixel_column<80 else
+						x"00" when (dir_pixel_column>=80 and dir_pixel_column<160) else
+						x"ff" when (dir_pixel_column>=160 and dir_pixel_column<240) else
+						x"00" when (dir_pixel_column>=240 and dir_pixel_column<320) else
+						x"ff" when (dir_pixel_column>=320 and dir_pixel_column<400) else
+						x"00" when (dir_pixel_column>=400 and dir_pixel_column<480) else
+						x"ff" when (dir_pixel_column>=480 and dir_pixel_column<560) else
+						x"00" ;
   -- koristeci signale realizovati logiku koja pise po TXT_MEM
   --char_address
   --char_value
   --char_we
-		-- INCUBATOR IS IN MY HOME      I N C U B A T O R S M Y H E
+		-- INCUBATOR 
 		
 		char_we<='1';
 		
-		process(pix_clock_s) begin
+		process(pix_clock_s,sec_cnt) begin
 			if(rising_edge(pix_clock_s)) then
 				if(char_address="10010110000")then
 					char_address<=(others=>'0');
@@ -303,15 +307,15 @@ begin
 		
 		
 		
-		char_value <= "00"&X"9" when char_address="00010000000" else			--I
-						"00"&X"E"	when char_address="00010000001" else			--N
-						"00"&X"B"	when char_address="00010000010" else			--K
-						"01"&X"5"	when char_address="00010000011" else			--U
-						"00"&X"2"	when char_address="00010000100" else			--B
-						"00"&X"1"	when char_address="00010000101" else			--A
-						"01"&X"4"	when char_address="00010000110" else			--T
-						"00"&X"F"	when char_address="00010000111" else			--O
-						"01"&X"2"	when char_address="00010001000" else			--R
+		char_value <= "00"&X"9" when char_address="00010100000"+offset else			--I
+						"00"&X"E"	when char_address="00010100001"+offset else			--N
+						"00"&X"B"	when char_address="00010100010"+offset else			--K
+						"01"&X"5"	when char_address="00010100011"+offset else			--U
+						"00"&X"2"	when char_address="00010100100"+offset else			--B
+						"00"&X"1"	when char_address="00010100101"+offset else			--A
+						"01"&X"4"	when char_address="00010100110"+offset else			--T
+						"00"&X"F"	when char_address="00010100111"+offset else			--O
+						"01"&X"2"	when char_address="00010101000"+offset else			--R
 						"100000";																-- 
 						
 		pixel_we<='1';
@@ -321,7 +325,6 @@ begin
 					sec_cnt<=sec_cnt_next;
 					move_cnt<=move_cnt_next;
 					offset<=offset_next;
-					
 					if(pixel_col=20) then
 						pixel_col<=(others=>'0');
 						pixel_row<=pixel_row+20;
@@ -342,10 +345,13 @@ begin
 		sec_cnt_next<=sec_cnt+1 when sec_cnt<10000000 else (others=>'0');
 		move_cnt_next<= move_cnt when sec_cnt<10000000 else
 																move_cnt+1 when move_cnt<19 else(others=>'0');
-		pixel_address<=pixel_row+pixel_col;
-		pixel_value <=X"FFFFFFFF" when pixel_col=move_cnt and pixel_row>400 and pixel_row<1040 else
+		offset_next <= offset when sec_cnt < 10000000 else
+					offset +1 when offset < 31 else (others => '0');
+
+		pixel_address<=pixel_row+pixel_col+offset_next;
+		pixel_value <=X"FFFFFFFF" when pixel_col=move_cnt and pixel_row>420 and pixel_row<1040 else
 							X"00000000";
 							
-		
+
 		
 end rtl;
